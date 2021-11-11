@@ -70,6 +70,9 @@ public class Model implements AutoCloseable {
     }
 
 
+    /*
+     * Collect all the uninterpreted terms that have a value in model mdl.
+     */
     public int[] collectDefinedTerms(){
         return Yices.collectDefinedTerms(ptr);
     }
