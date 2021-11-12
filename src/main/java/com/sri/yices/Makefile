@@ -10,7 +10,7 @@
 # jni_md.h is in ${JAVA_HOME}/include/${OS}, and that ${YICES_JNI} exists
 #
 
-SHELL=/bin/sh
+SHELL=/bin/bash
 
 ifneq ($(MAKECMDGOALS),clean)
 
@@ -102,4 +102,4 @@ install-darwin:
 clean:
 	rm -f *.o *.so *.dylib com_sri_yices_Yices.h *.class
 
-.PHONY: all clean install install-linux install-darwin
+.PHONY: all clean install install-linux install-darwin 

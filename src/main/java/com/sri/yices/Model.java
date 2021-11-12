@@ -6,6 +6,19 @@ import java.math.BigInteger;
  * Class for Yices models
  */
 public class Model implements AutoCloseable {
+
+    public Model() throws RuntimeException {
+        ptr = Yices.newModel();
+        if (ptr == 0) {
+            RuntimeException error = YicesException.checkVersion(2, 6, 4);
+            if (error == null) {
+                error = new RuntimeException("Out of memory");
+            }
+            throw error;
+        }
+        population++;
+    }
+
     /*
      * This is a pointer to the model
      */
@@ -15,6 +28,8 @@ public class Model implements AutoCloseable {
         ptr = p;
         population++;
     }
+
+    protected long getPtr() { return ptr; }
 
     //<PROFILING>
     static private long population = 0;
@@ -67,14 +82,6 @@ public class Model implements AutoCloseable {
 
     public String toString(int numColumns, int numLines) {
         return Yices.modelToString(ptr, numColumns, numLines);
-    }
-
-
-    /*
-     * Collect all the uninterpreted terms that have a value in model mdl.
-     */
-    public int[] collectDefinedTerms(){
-        return Yices.collectDefinedTerms(ptr);
     }
 
     /*
@@ -147,6 +154,84 @@ public class Model implements AutoCloseable {
         int v = Yices.valuesAsTerms(ptr, terms, output);
         if (v < 0) throw new YicesException();
         return output;
+    }
+
+    /*
+     * Set the value of a term t in the model
+     */
+    public void setBoolean(int t, boolean val)  throws YicesException {
+        int code = Yices.modelSetBool(ptr, t, val ? 1 : 0);
+        if (code < 0) {
+            YicesException error = YicesException.checkVersion(2, 6, 4);
+            if (error == null) {
+                // not a library mismatch error; so do the default
+                error = new YicesException();
+            }
+            throw error;
+        }
+    }
+
+    public void setInteger(int t, long val)  throws YicesException {
+        int code = Yices.modelSetInteger(ptr, t, val);
+        if (code < 0) {
+            YicesException error = YicesException.checkVersion(2, 6, 4);
+            if (error == null) {
+                // not a library mismatch error; so do the default
+                error = new YicesException();
+            }
+            throw error;
+        }
+    }
+
+    public void setRational(int t, long num, long den)  throws YicesException {
+        int code = Yices.modelSetRational(ptr, t, num, den);
+        if (code < 0) {
+            YicesException error = YicesException.checkVersion(2, 6, 4);
+            if (error == null) {
+                // not a library mismatch error; so do the default
+                error = new YicesException();
+            }
+            throw error;
+        }
+    }
+
+    public void setBVInteger(int t, long val)  throws YicesException {
+        int code = Yices.modelSetBVInteger(ptr, t, val);
+        if (code < 0) {
+            YicesException error = YicesException.checkVersion(2, 6, 4);
+            if (error == null) {
+                // not a library mismatch error; so do the default
+                error = new YicesException();
+            }
+            throw error;
+        }
+    }
+
+    public void setBVFromArray(int t, int[] arr)  throws YicesException {
+        int code = Yices.modelSetBVFromArray(ptr, t, arr);
+        if (code < 0) {
+            YicesException error = YicesException.checkVersion(2, 6, 4);
+            if (error == null) {
+                // not a library mismatch error; so do the default
+                error = new YicesException();
+            }
+            throw error;
+        }
+    }
+
+
+
+    public int[] collectDefinedTerms() {
+        int[] retval = Yices.modelCollectDefinedTerms(ptr);
+        if (retval == null) {
+            YicesException error = YicesException.checkVersion(2, 6, 4);
+            if (error == null) {
+                // not a library mismatch error; so do the default
+                error = new YicesException();
+            }
+            throw error;
+        }
+        return retval;
     }
 
 
@@ -289,13 +374,13 @@ public class Model implements AutoCloseable {
         return b;
     }
 
-    // If successful returns true, and stores the scalar value in a[0], and it's type in a[1]
-    // If unsuccessful, returns false and does nothing to a.
-    public boolean scalarValue(YVal yval, int[] a) throws YicesException {
-        if (a.length < 2) throw new IllegalArgumentException("array too small");
+    // returns an array a of two elements: the value of yval is stored
+    // in a[0] (constant index), and its type in a[1]
+    public int[] scalarValue(YVal yval) throws YicesException {
+        int[] a = new int[2];
         int v = Yices.valGetScalar(ptr, yval.tag.ordinal(), yval.id, a);
-        if (v < 0) return false;
-        return true;
+        if (v < 0) throw new YicesException();
+        return a;
     }
 
     public YVal[] expandTuple(YVal yval) throws YicesException {

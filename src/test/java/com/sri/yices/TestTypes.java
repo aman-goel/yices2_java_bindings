@@ -216,20 +216,22 @@ public class TestTypes {
 
         try {
             int tau = Types.parse("(-> bool)");
-        } catch (Exception e) {
+        } catch (YicesException e) {
             System.out.println("Got exception: " + e);
+            System.out.println(e.errorReport);
         }
         try {
             int a[] = new int [] { };
             int error = Types.tupleType(a);
-        } catch (Exception e) {
+        } catch (YicesException e) {
             System.out.println("Got exception: " + e);
+            System.out.println(e.errorReport);
         }
         try {
             int n = Types.numChildren(Types.NULL_TYPE);
-        } catch (Exception e) {
+        } catch (YicesException e) {
             System.out.println("Got exception: " + e);
+            System.out.println(e.errorReport);
         }
     }
 }
-

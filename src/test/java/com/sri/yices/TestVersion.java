@@ -12,14 +12,19 @@ public class TestVersion {
     @Test
     public void testVersion() {
         assumeTrue(TestAssumptions.IS_YICES_INSTALLED);
-        
-        System.out.println("Loaded Yices version " + Yices.version());
-        System.out.println("Yices version ordinal " + Yices.versionOrdinal());
-        System.out.println("Built for " + Yices.buildArch());
-        System.out.println("Build mode: " + Yices.buildMode());
-        System.out.println("Build date: " + Yices.buildDate());
-        System.out.println("MCSat supported: " + Yices.hasMcsat());
-        System.out.println();
+        StringBuilder sb = new StringBuilder();
+        sb.append("Loaded Yices version ").append(Yices.version()).append("\n");
+        sb.append("Yices version ordinal ").append(Yices.versionOrdinal()).append("\n");
+        sb.append("Built for ").append(Yices.buildArch()).append("\n");
+        sb.append("Build mode: ").append(Yices.buildMode()).append("\n");
+        sb.append("Build date: ").append(Yices.buildDate()).append("\n");
+        sb.append("MCSat supported: ").append(Yices.hasMcsat()).append("\n").append("\n");
+
+        String message = sb.toString();
+        System.out.println(message);
+
+        YicesException error = YicesException.checkVersion(3, 7, 9);
+        System.out.println(error);
 
         Assert.assertTrue(Yices.versionOrdinal() >= Yices.versionOrdinal(2, 6, 1));
 

@@ -55,7 +55,7 @@ public class TestDimacs {
 
         // second round, simplify the CNF
         System.err.println("Round two");
-        for (int i = 1; i <= fcount; i++ ){
+         for (int i = 1; i <= fcount; i++ ){
             boolean simplify = true;
             String filename = String.format("/tmp/simplify%d.cnf", i);
             int[] terms = truncate(formulas, i);
@@ -67,7 +67,7 @@ public class TestDimacs {
 
 
         System.err.println("Round three");
-        for (int i = 1; i <= fcount; i++ ){
+         for (int i = 1; i <= fcount; i++ ){
              try (Context ctx = new Context("QF_BV")) {
                  int[] terms = truncate(formulas, i);
                  ctx.assertFormulas(terms);

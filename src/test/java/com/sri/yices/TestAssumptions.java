@@ -17,7 +17,7 @@ public class TestAssumptions {
     } catch (LinkageError e) {
         System.err.println(String.format("isYicesInstalled() threw %s\n", e.getMessage()));
         e.printStackTrace(System.err);
-        return false;
+       return false;
     }
   }
 }

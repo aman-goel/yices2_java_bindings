@@ -2,6 +2,8 @@ package com.sri.yices;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -107,7 +109,7 @@ public class Context implements AutoCloseable {
      * Close: free the Yices data structure
      */
     public void close() {
-	if (ptr != 0) {
+	    if (ptr != 0) {
             if (Profiler.enabled) {
                 long start = System.nanoTime();
                 Yices.freeContext(ptr);
@@ -116,9 +118,9 @@ public class Context implements AutoCloseable {
             } else {
                 Yices.freeContext(ptr);
             }
-	    ptr = 0;
+	        ptr = 0;
             population--;
-	}
+	    }
     }
 
     /*
@@ -282,101 +284,87 @@ public class Context implements AutoCloseable {
     }
 
     /*
-     * Call the solver with the given assumptions.
+     * Check with a timeout in seconds
      */
-    public Status checkWithAssumptions(Parameters p, List<Integer> assumptions){
-        int[] a = assumptions.stream().mapToInt(Integer::intValue).toArray();
-        return checkWithAssumptions(p, a);
+    public Status check(int timeout) throws YicesException {
+        return doCheckWithTimer(0, timeout);
     }
 
-    public Status checkWithAssumptions(Parameters p, int[] assumptions){
-        int code;
-        if (Profiler.enabled) {
-            long start = System.nanoTime();
-            code = Yices.checkContextWithAssumptions(ptr, p == null ? 0 : p.getPtr(), assumptions);
-            long finish = System.nanoTime();
-            Profiler.delta("Yices.checkContextWithAssumptions", start, finish);
-        } else {
-            code = Yices.checkContextWithAssumptions(ptr, p == null ? 0 : p.getPtr(), assumptions);
-        }
-        return Status.idToStatus(code);
-    }
-
-    public int[] getUnsatCore(){
-        int[] retval;
-        if (Profiler.enabled) {
-            long start = System.nanoTime();
-            retval = Yices.getUnsatCore(ptr);
-            long finish = System.nanoTime();
-            Profiler.delta("Yices.getUnsatCore", start, finish);
-        } else {
-            retval = Yices.getUnsatCore(ptr);
-        }
-        return retval;
+    public Status check(Parameters p, int timeout) throws YicesException {
+        return doCheckWithTimer(p.getPtr(), timeout);
     }
 
     /*
-     * Simple watchdog to stop the search after a timeout
+     * Check with a timeout:
+     * - p = pointer to the Yices internal parameter descriptor
+     * - timeout = timeout in seconds
+     * This calls Yices.stopSearch if the timer expires.
      */
-    private static class WatchDog implements Runnable {
-        private long ctx;
-        private int timeout; // in seconds
-        private volatile boolean stopped;
-        private Thread thread;
-
-        WatchDog(long ctx, int timeout) {
-            if (timeout < 1) timeout = 1;
-            this.ctx = ctx;
-            this.timeout = timeout;
-            stopped = false;
-            thread = null;
-        }
-
-        public void run() {
-            try {
-                TimeUnit.SECONDS.sleep(timeout);
-            } catch (InterruptedException e) {
-                // don't do anything
+    private Status doCheckWithTimer(long p, int timeout)  throws YicesException {
+        Timer timer = new Timer();
+        TimerTask task = new TimerTask() {
+            public void run() {
+                Yices.stopSearch(ptr);
             }
-            if (! stopped) {
-                // stop the context
-                Yices.stopSearch(ctx);
-            }
-        }
-
-        public synchronized void stop() {
-            stopped = true;
-            if (thread != null && thread.isAlive()) {
-               thread.interrupt();
-               thread = null;
-            }
-        }
-
-        public synchronized void start() {
-            stopped = false;
-            thread =  new Thread(this);
-            thread.start();
-        }
-    }
-
-    /*
-     * Check with timeout
-     */
-    private Status doCheckWithTimeout(long p, int timeout) throws YicesException {
-        WatchDog watchDog = new WatchDog(ptr, timeout);
-        watchDog.start();
+        };
+        long delay = (timeout < 1) ? 1000L : 1000L * timeout; //need miliseconds, have seconds.
+        timer.schedule(task, delay);
         int code = doCheck(ptr, p);
-        watchDog.stop();
+        timer.cancel();
         if (code < 0) throw new YicesException();
         return Status.idToStatus(code);
     }
 
-    public Status check(int timeout) throws YicesException {
-        return doCheckWithTimeout(0, timeout);
+    // Since 2.6.4
+    public int getModelInterpolant() {
+        int retval = Yices.getModelInterpolant(ptr);
+        if (retval < 0){
+            YicesException error = YicesException.checkVersion(2, 6, 4);
+            if (error == null) {
+                // not a library mismatch error; so do the default
+                error = new YicesException();
+            }
+            throw error;
+        }
+        return retval;
     }
 
-    public Status check(Parameters p, int timeout) throws YicesException {
-        return doCheckWithTimeout(p.getPtr(), timeout);
+    // Since 2.6.4
+    public Status checkWithAssumptions(Parameters params, int[] assumptions) {
+        int code = Yices.checkContextWithAssumptions(ptr, params.getPtr(), assumptions);
+        if (code < 0) {
+            throw new YicesException();
+        }
+        return Status.idToStatus(code);
     }
+
+    // Since 2.6.4
+    public Status checkWithModel(Parameters params, Model model, int[] assumptions) {
+        int code = Yices.checkContextWithModel(ptr, params.getPtr(), model.getPtr(), assumptions);
+        if (code < 0) {
+            YicesException error = YicesException.checkVersion(2, 6, 4);
+            if (error == null) {
+                // not a library mismatch error; so do the default
+                error = new YicesException();
+            }
+            throw error;
+        }
+        return Status.idToStatus(code);
+    }
+
+    // Since 2.6.4
+    public int[] getUnsatCore() {
+        int[] retval = Yices.getUnsatCore(ptr);
+        if (retval == null) {
+            YicesException error = YicesException.checkVersion(2, 6, 4);
+            if (error == null) {
+                // not a library mismatch error; so do the default
+                error = new YicesException();
+            }
+            throw error;
+        }
+        return retval;
+    }
+
 
  }

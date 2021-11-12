@@ -2,6 +2,7 @@ package com.sri.yices;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.math.RoundingMode;
 import java.util.Objects;
 
 /**
@@ -69,7 +70,7 @@ public class BigRational {
     /**
      * Constructor from a BigDecimal
      */
-    static private final BigInteger ten = BigInteger.valueOf(10);
+    static private final BigInteger ten = BigInteger.TEN;
 
     public BigRational(BigDecimal x) {
         BigInteger u = x.unscaledValue();
@@ -125,10 +126,10 @@ public class BigRational {
     }
 
     public double doubleValue() {
-        // could use something better here.
-        return numerator.doubleValue()/denominator.doubleValue();
+        BigDecimal numDec   = new BigDecimal(this.numerator);
+        BigDecimal denomDec = new BigDecimal(this.denominator);
+        return numDec.divide(denomDec, 64, RoundingMode.HALF_EVEN).doubleValue();
     }
-
 
     /**
      * Get numerator and denominator as arrays of bytes
@@ -145,11 +146,11 @@ public class BigRational {
      * Convert to a string
      */
     public String toString() {
-	String s = numerator.toString();
-	if (! denominator.equals(BigInteger.ONE)) {
-	    s = s + "/" + denominator.toString();
-	}
-	return s;
+	    String s = numerator.toString();
+	    if (! denominator.equals(BigInteger.ONE)) {
+	        s = s + "/" + denominator.toString();
+	    }
+	    return s;
     }
 
     /**

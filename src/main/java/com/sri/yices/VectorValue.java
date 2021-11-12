@@ -2,9 +2,7 @@ package com.sri.yices;
 
 /**
  * Little class to act like Pair<YVal[], YVal>
- *
  */
-
 public class VectorValue {
     public final YVal[] vector;
     public final YVal value;

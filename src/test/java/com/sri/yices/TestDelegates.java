@@ -52,7 +52,7 @@ public class TestDelegates {
 
         int[] formulas = makeFormlas();
 
-       for (int i = 1; i <= FCOUNT; i++ ){
+        for (int i = 1; i <= FCOUNT; i++ ){
             try (Context ctx = new Context("QF_BV")) {
                 int[] terms = truncate(formulas, i);
                 ctx.assertFormulas(terms);
@@ -69,7 +69,7 @@ public class TestDelegates {
             if (status == Status.SAT) {
                 System.out.println(String.format("Delegate %s model: %s", delegate, model[0]));
             } else {
-                Assert.assertEquals(model[0], null);
+                Assert.assertNull(model[0]);
             }
         }
 
@@ -78,7 +78,12 @@ public class TestDelegates {
             Model[] model = { null };
             int term = conjoin(formulas, i);
             Status status = Delegate.checkFormula(term, "QF_BV", delegate, model);
-            System.out.println(String.format("Delegate %s status %d: %s", delegate, i, status));
+            System.out.println(String.format("Delegate %s status %d: %s%n", delegate, i, status));
+            if (status == Status.SAT) {
+                System.out.println(String.format("Delegate %s model: %s%n", delegate, model[0]));
+            } else {
+                Assert.assertNull(model[0]);
+            }
         }
 
         Terms.removeName("x");

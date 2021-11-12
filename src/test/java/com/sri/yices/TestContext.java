@@ -167,5 +167,6 @@ public class TestContext {
 
         // 1009 is prime
         bitvectorFactor(1009, 32);
+        bitvectorFactor(817147, 100);
     }
 }

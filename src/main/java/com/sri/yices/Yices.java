@@ -41,8 +41,8 @@ public final class Yices {
      * @param  patch    (a number between 0 and less than 100).
      *
      */
-    public static final long versionOrdinal(int version, int major, int patch){
-        return (1000 * 100 * version) + (100 * major) + patch;
+    public static long versionOrdinal(int version, int major, int patch) {
+        return (10000 * (long)version) + (100 * (long)major) + (long)patch;
     }
 
     /*
@@ -78,9 +78,10 @@ public final class Yices {
     public static native String errorString();
     public static native void resetError();
 
+    public static native ErrorReport errorReport();
+
     // For testing only
     public static native void testException();
-
 
     /*
      * TYPES
@@ -195,9 +196,9 @@ public final class Yices {
     }
 
     public static int mkRationalConstant(BigInteger num, BigInteger den) {
-        BigRational r = new BigRational(num, den);
-        r.normalize();
-        return mkRationalConstant(r);
+	    BigRational r = new BigRational(num, den);
+	    r.normalize();
+	    return mkRationalConstant(r);
     }
 
     public static native int parseRational(String s);
@@ -440,11 +441,11 @@ public final class Yices {
     public static native void yicesGarbageCollect(int[] rootTerms, int[] rootTypes, boolean keepNamed);
 
     public static void yicesGarbageCollect(boolean keepNamed) {
-    yicesGarbageCollect(null, null, keepNamed);
+	yicesGarbageCollect(null, null, keepNamed);
     }
 
     public static void yicesGarbageCollect() {
-        yicesGarbageCollect(null, null, false);
+	    yicesGarbageCollect(null, null, false);
     }
 
     /*
@@ -466,8 +467,14 @@ public final class Yices {
     public static native int assertFormula(long ctx, int t);
     public static native int assertFormulas(long ctx, int[] t);
     public static native int checkContext(long ctx, long params);
+    // since 2.?.?  (new in the 2.6.4 bindings)
     public static native int checkContextWithAssumptions(long ctx, long params, int[] t);
-    public static native int[] getUnsatCore(long ctx);
+    // since 2.6.4
+    public static native int checkContextWithModel(long ctx, long params, long model, int[] t);
+
+    // since 2.6.4
+    public static native int checkContextWithInterpolation(long ctxA, long ctxB, long params, long[] model, int[] interpolant);
+
     public static native int assertBlockingClause(long ctx);
     public static native void stopSearch(long ctx);
     public static native long newParamRecord();
@@ -475,13 +482,38 @@ public final class Yices {
     public static native int setParam(long p, String pname, String value);
     public static native void freeParamRecord(long param);
 
+    // since 2.?.?  (new in the 2.6.4 bindings)
+    public static native int[] getUnsatCore(long ctx);
+
+    // since 2.6.4
+    public static native int getModelInterpolant(long ctx);
+
     /*
      * MODELS
      */
+    // since 2.6.4
+    public static native long newModel();
+
     public static native long getModel(long ctx, int keep_subst);
     public static native void freeModel(long model);
     public static native long modelFromMap(int [] var, int [] map);
-    public static native int[] collectDefinedTerms(long model);
+
+    //  since 2.6.4
+    public static native int modelSetBool(long model, int var, int val);
+
+    //  since 2.6.4
+    public static native int modelSetInteger(long model, int var, long val);
+
+    public static native int modelSetRational(long model, int var, long num, long den);
+
+    // since  2.6.4
+    public static native int modelSetBVInteger(long model, int var, long val);
+
+    // since  2.6.4
+    public static native int modelSetBVFromArray(long model, int var, int[] arr);
+
+    // since 2.?.?  (new in the 2.6.4 bindings)
+    public static native int[] modelCollectDefinedTerms(long model);
 
 
     // getBoolValue returns the value of term t in model.
@@ -510,8 +542,8 @@ public final class Yices {
     private static native byte[] getRationalValueDenAsBytes(long model, int t);
 
     public static BigInteger getIntegerValue(long model, int t) {
-        byte[] val = getIntegerValueAsBytes(model, t);
-        return val != null ? new BigInteger(val) : null;
+	    byte[] val = getIntegerValueAsBytes(model, t);
+	    return val != null ? new BigInteger(val) : null;
     }
 
     public static BigRational getRationalValue(long model, int t) {
@@ -735,8 +767,8 @@ public final class Yices {
     private static native byte[] valGetRationalDenAsBytes(long model, int tag, int id);
 
     public static BigInteger valGetInteger(long model, int tag, int id) {
-        byte[] val = valGetIntegerAsBytes(model, tag, id);
-        return val != null ? new BigInteger(val) : null;
+	    byte[] val = valGetIntegerAsBytes(model, tag, id);
+	    return val != null ? new BigInteger(val) : null;
     }
 
     public static BigRational valGetRational(long model, int tag, int id) {
@@ -782,7 +814,11 @@ public final class Yices {
     /* <TooHardBasket> */
     // public static native int yices_val_get_algebraic_number(model_t *model, const yval_t *v, lp_algebraic_number_t *a);
     // public static native int yices_pp_model_fd(int fd, model_t *model, uint width, uint height, uint offset);
-    /* </TooHardBasket> */
+    // public static native int yices_model_set_mpz(model_t *model, term_t var, mpz_t val);
+    // public static native int yices_model_set_mpq(model_t *model, term_t var, mpq_t val);
+    // public static native int yices_model_set_algebraic_number(model_t *model, term_t var, const lp_algebraic_number_t *val);
+    // public static native int yices_model_set_bv_mpz(model_t *model, term_t var, mpz_t val);
+   /* </TooHardBasket> */
 
 
 }

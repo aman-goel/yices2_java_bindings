@@ -15,7 +15,7 @@ public final class Profiler {
     /**
      * Compile-time on off switch for profiling.
      */
-    public static final boolean enabled = false;
+    public static boolean enabled = false;
 
     static private final boolean distributions = false;
 
@@ -24,7 +24,8 @@ public final class Profiler {
     static private Set<Long> threads = new HashSet<Long>();
 
     static private Map<String,Long> lineItems = new HashMap<String,Long>();
-
+    // for pretty printing
+    static private int lineItemMax = 0;
 
     // for each instrumented API routine: the value maps a call time in TENTHS of a second to the number of calls that have that time.
     static private Map<String, Map<Integer,Integer>> distribution = new HashMap<String, Map<Integer,Integer>>();
@@ -36,7 +37,13 @@ public final class Profiler {
 
     private static void addLineItem(String caller, long cost){
         Long current = lineItems.get(caller);
-        lineItems.put(caller, current == null ? cost : current + cost);
+        if (current == null){
+            int len = caller.length();
+            lineItems.put(caller, cost);
+            lineItemMax = (lineItemMax < len ? len : lineItemMax);
+        } else {
+            lineItems.put(caller, current + cost);
+        }
     }
 
     private static void addDistribution(String caller, int callTime){
@@ -51,10 +58,14 @@ public final class Profiler {
         map.put(callTime, count + 1);
     }
 
-
     public static int getThreadCount(){
         return threads.size();
     }
+
+    public static void configure(boolean enabled){
+        Profiler.enabled = enabled;
+    }
+
 
     /**
      * Increments the cost by (stop - start)
@@ -76,8 +87,6 @@ public final class Profiler {
             addDistribution(caller, (int)(cost/1000000));
         }
     }
-
-
 
     /**
      * Resets the cost accumulation counter to zero.
@@ -102,6 +111,24 @@ public final class Profiler {
         return sb.toString();
     }
 
+    /**
+     * Pad the input string with trailing whitespace so that it is exactly n characters long.
+     * @param input the string to be padded
+     * @param n the decited length of the padded result.
+     */
+    private static String pad(String input, int n){
+        int len = input.length();
+        if (len < n) {
+            char[] chars = new char[n];
+            char[] inp = input.toCharArray();
+            for (int i = 0; i < n; i++){
+                chars[i] = i < len ? inp[i] : ' ';
+            }
+            return  new String(chars);
+        } else {
+            return input;
+        }
+    }
 
 
     private static void lineItems2StringBuilder(StringBuilder sb){
@@ -110,14 +137,16 @@ public final class Profiler {
             .stream()
             .sorted(Map.Entry.comparingByValue(Comparator.reverseOrder()))
             .forEachOrdered(x -> sortedLineItems.put(x.getKey(), x.getValue()));
+
+        int padLength = lineItemMax + 5;
+
         for (String caller : sortedLineItems.keySet()){
-            sb.append(caller).append(":\t\t").append(lineItems.get(caller)/1000000).append(" milliseconds\n");
+            sb.append(pad(caller, padLength)).append(lineItems.get(caller)/1000000).append(" milliseconds\n");
         }
     }
 
-
-
     /* Data is formatted for this:
+<python graph plot code>
 import matplotlib.pyplot as plt
 # frequencies
 counts = <data goes here>
@@ -127,6 +156,7 @@ plt.xlabel('call time (tenths of a second)')
 plt.ylabel('No. of calls')
 plt.title('<caller> on ...')
 plt.show()
+</python graph plot code>
      */
     private static void distribution2StringBuilder(String caller, StringBuilder sb){
         Map<Integer,Integer> map = distribution.get(caller);
@@ -152,7 +182,7 @@ plt.show()
     public static void toString(StringBuilder sb){
         if (enabled) {
             sb.append("\n--- PROFILING SUMMARY ---\n\n");
-            sb.append("Calling thread count: ").append(getThreadCount()).append("\n");
+            sb.append("Calling thread count: ").append(getThreadCount()).append("\n\n");
             lineItems2StringBuilder(sb);
             if (distributions) {
                 distribution2StringBuilder(sb);
@@ -160,6 +190,5 @@ plt.show()
             }
         }
     }
-
 
 }

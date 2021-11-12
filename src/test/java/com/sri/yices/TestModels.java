@@ -76,8 +76,7 @@ public class TestModels {
                 System.out.println(m);
                 YVal y1 = m.getValue(s1);
                 Assert.assertEquals(y1.tag, YValTag.SCALAR);
-                int[] vals = {0, 0};
-                Assert.assertTrue(m.scalarValue(y1, vals));
+                int[] vals = m.scalarValue(y1);
                 Assert.assertEquals(vals[0], m.scalarValue(s1));
                 Assert.assertEquals(vals[1], tau);
                 Terms.removeName("s1");
@@ -254,6 +253,56 @@ public class TestModels {
         }
     }
 
+    @Test
+    public void testYices2_6_4() {
+        Model model = new Model();
+        System.out.println("Model for nothing: ");
+        System.out.println(model);
+        System.out.println("Defined terms: ");
+        System.out.println(model.collectDefinedTerms());
+        int xbool = Terms.newUninterpretedTerm("xbool", Types.BOOL);
+        int ybool = Terms.newUninterpretedTerm("ybool", Types.BOOL);
+        model.setBoolean(xbool, true);
+        model.setBoolean(ybool, false);
+        System.out.println("Model after setting xbool and ybool: ");
+        System.out.println(model);
+        System.out.println("Defined terms: ");
+        System.out.println(model.collectDefinedTerms());
+        int xint = Terms.newUninterpretedTerm("xint", Types.INT);
+        int yint = Terms.newUninterpretedTerm("yint", Types.INT);
+        model.setInteger(xint, 666);
+        model.setInteger(yint, 1234567890);
+        System.out.println("Model after setting xint and yint: ");
+        System.out.println(model);
+        System.out.println("Defined terms: ");
+        System.out.println(model.collectDefinedTerms());
+        int xreal = Terms.newUninterpretedTerm("xreal", Types.REAL);
+        int yreal = Terms.newUninterpretedTerm("yreal", Types.REAL);
+        model.setRational(xreal, 1, 3);
+        model.setRational(yreal, 100000, 99999);
+        System.out.println("Model after setting xreal and yreal: ");
+        System.out.println(model);
+        System.out.println("Defined terms: ");
+        System.out.println(model.collectDefinedTerms());
 
+        int xbv8 = Terms.newUninterpretedTerm("xbv8", Types.BV8);
+        int ybv8 = Terms.newUninterpretedTerm("ybv8", Types.BV8);
+        model.setBVInteger(xbv8, 32);
+        model.setBVInteger(ybv8, -1);
+        System.out.println("Model after setting xbv8 and ybv8: ");
+        System.out.println(model);
+        System.out.println("Defined terms: ");
+        System.out.println(model.collectDefinedTerms());
 
+        /* waiting on an implementation in the the yices dynamic library ¯\_(ツ)_/¯
+        */
+        int xbv16 = Terms.newUninterpretedTerm("xbv16", Types.BV16);
+        int[] xv = {1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0};
+        int ybv16 = Terms.newUninterpretedTerm("ybv16", Types.BV16);
+        int[] yv = {1,1,1,1,1,0,0,0,0,0,1,0,1,0,1,0};
+        model.setBVFromArray(xbv16, xv);
+        model.setBVFromArray(ybv16, yv);
+        System.out.println("Model after setting xbv16 and ybv16: ");
+        System.out.println(model);
+    }
 }
