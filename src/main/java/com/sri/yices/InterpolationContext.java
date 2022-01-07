@@ -1,16 +1,16 @@
 package com.sri.yices;
 
-// Since 2.6.4 
+// Since 2.6.4
 
 public class InterpolationContext {
-    
+
     private final Context ctxA;
     private final Context ctxB;
 
     private int interpolant = 0;
     private Model model = null;
 
-    // constructor 
+    // constructor
     public InterpolationContext(Context ctxA, Context ctxB) {
         this.ctxA = ctxA;
         this.ctxB = ctxB;
@@ -24,7 +24,7 @@ public class InterpolationContext {
      * Check satisfiability and compute interpolant.
      *
      * Check whether the combined assertions stored in ctx are satisfiable. If they are
-     * not compute an interpolants (defined on variables common to both contexts).
+     * not compute an interpolant (defined on variables common to both contexts).
      * - params is an optional structure to store heuristic parameters
      * - if params is NULL, default parameter settings are used.
      * If this function returns STATUS_UNSAT, then an interpolant can be obtained via getInterpolant()
@@ -49,7 +49,7 @@ public class InterpolationContext {
         }
         return status;
     }
-    
+
 
     public int getInterpolant() {
         return this.interpolant;
