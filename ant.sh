@@ -8,6 +8,10 @@ YI=${REPO_ROOT}/dist/lib
 
 YICES_CLASSPATH=${YC} YICES_JNI=${YI} ./build.sh
 
-jar -cvfm ${YI}/yices.jar ${REPO_ROOT}/MANIFEST.txt -C ${YC} ${YC}/com/sri/yices/*.class
+cd ${YC}
+jar -cvfm ${YI}/yices.jar ${REPO_ROOT}/MANIFEST.txt com/sri/yices/*.class
 
-java -Djava.library.path=${REPO_ROOT}/dist/lib -jar ${REPO_ROOT}/dist/lib/yices.jar
+cd ${YI}
+java -Djava.library.path=. -jar yices.jar
+
+cd ${REPO_ROOT}
