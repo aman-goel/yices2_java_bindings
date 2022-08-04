@@ -34,11 +34,31 @@ public class YicesException extends RuntimeException {
      *
      */
     protected static YicesException checkVersion(int version, int major, int patch) {
-        if (Yices.versionOrdinal(version, major, patch) > Yices.versionOrdinal()) {
-            String message = String.format("The required version of the yices dynamic library is %d.%d.%d, yours is %s", version, major, patch, Yices.version());
+        long requiredVersion = Yices.versionOrdinal(version, major, patch);
+        long actualVersion = Yices.versionOrdinal();
+        if (requiredVersion > actualVersion) {
+            String message = versionMismatchMsg(version, major, patch);   
             return new YicesException(message);
         } 
         return null;
+    }
+
+    private static String ordinal2String(long ordinal) {
+        long x = ordinal / 10000;
+        long rem = ordinal % 10000;
+        long y = rem / 100;
+        rem = rem % 100;
+        long z = rem;
+        return String.format("%d.%d.%d", x, y, z);
+    }
+
+    private static String versionMismatchMsg(int version, int major, int patch) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("Version Mismatch -\nThe required version of the Yices is: %d.%d.%d\n", version, major, patch));
+        sb.append(String.format("Your Yices dynamic library version is: %s\n", Yices.version()));
+        sb.append(String.format("Your Yices java bindings were compiled against a Yices with version: %s\n", ordinal2String(Yices.versionOrdinal())));
+        sb.append("All three versions need to match.\n");
+        return sb.toString();
     }
 
 }

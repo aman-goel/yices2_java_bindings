@@ -31,9 +31,6 @@ public final class Yices {
         return is_ready;
     }
 
-    /* Version as an ordinal. For library compatability checks */
-    public static native long versionOrdinal();
-
     /**
      * For comparisons (this is how the no argument version is computed, using the constants in yices.h)
      * @param  version  (a number between 0 and less than 100).
@@ -46,9 +43,28 @@ public final class Yices {
     }
 
     /*
-     * Generic functions in yices.h
+     * Runtime version of Yices2
+     *
+     * The version as a string "x.y.z", this is a direct call into the
+     * yices2 dynamic library at runtime, and so indicates the current
+     * version of Yices2 being used AT RUNTIME.
      */
     public static native String version();
+
+    /**
+     * Compile time Version of Yices2 as an ordinal. For library compatability checks 
+     *
+     * versionOrdinal() = (10000 * __YICES_VERSION) + (100 * __YICES_VERSION_MAJOR) + __YICES_VERSION_PATCHLEVEL
+     * 
+     * This indicates the version of Yices2 the Java JNI bindings were compiled against.
+     * Thus it is the COMPILE TIME version of Yices2 being used, which may differ from the one being 
+     * used at RUNTIME.
+     */
+    public static native long versionOrdinal();
+
+    /*
+     * Generic functions in yices.h
+     */
     public static native String buildArch();
     public static native String buildMode();
     public static native String buildDate();
