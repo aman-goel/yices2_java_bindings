@@ -49,13 +49,13 @@ public class ErrorReport {
             sb.append("Term 1: ").append(Terms.toString(this.term1)).append("\n");
         }
         if (this.type1 > 0){
-            sb.append("Type 1: ").append(Terms.toString(this.type1)).append("\n");
+            sb.append("Type 1: ").append(Types.toString(this.type1)).append("\n");
         }
         if (this.term2 > 0){
             sb.append("Term 2: ").append(Terms.toString(this.term2)).append("\n");
         }
         if (this.type2 > 0){
-            sb.append("Type 2: ").append(Terms.toString(this.type2)).append("\n");
+            sb.append("Type 2: ").append(Types.toString(this.type2)).append("\n");
         }
         return sb.toString();
         /*
